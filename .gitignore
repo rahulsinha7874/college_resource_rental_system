@@ -1,0 +1,13 @@
+# Ignore environment and cache
+vendor/
+node_modules/
+.env
+*.log
+
+# Ignore upload folders with user data
+uploads/
+image/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
