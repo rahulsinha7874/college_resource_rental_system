@@ -34,6 +34,104 @@ $address = $_SESSION['checkout_address'];
     .method{border:1px solid #ccc;border-radius:5px;padding:10px;margin-bottom:10px}
     button{background:#006699;color:#fff;padding:10px 15px;border:0;border-radius:5px;cursor:pointer;width:100%;font-size:1rem;transition:0.3s}
     button:hover{background:#005580}
+    /* Footer */
+    footer {
+      background-color: var(--primary-color);
+      color: var(--white);
+      padding: 3rem 2rem 1.5rem;
+      margin-top: 4rem;
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .footer-column h3 {
+      color: var(--white);
+      margin-bottom: 1.5rem;
+      font-size: 1.2rem;
+    }
+
+    .footer-links {
+      list-style: none;
+    }
+
+    .footer-links li {
+      margin-bottom: 0.75rem;
+    }
+
+    .footer-links a {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .footer-links a:hover {
+      color: var(--accent-color);
+      padding-left: 5px;
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .social-links a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      color: var(--white);
+      transition: var(--transition);
+    }
+
+    .social-links a:hover {
+      background-color: var(--accent-color);
+      transform: translateY(-3px);
+    }
+
+    .newsletter-form {
+      display: flex;
+      margin-top: 1.5rem;
+    }
+
+    .newsletter-form input {
+      flex: 1;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 4px 0 0 4px;
+    }
+
+    .newsletter-form button {
+      padding: 0 1rem;
+      background-color: var(--accent-color);
+      color: var(--white);
+      border: none;
+      border-radius: 0 4px 4px 0;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .newsletter-form button:hover {
+      background-color: #e05555;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      margin-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
   </style>
 </head>
 <body>

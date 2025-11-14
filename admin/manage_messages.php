@@ -13,10 +13,14 @@ $result = $conn->query("SELECT * FROM contact_us ORDER BY id DESC");
 </head>
 <body>
 <div class="sidebar">
-  <ul>
-    <li><a href="dashboard.php">Dashboard</a></li>
-    <li><a href="manage_messages.php" class="active">Messages</a></li>
-  </ul>
+  <h2>Admin Panel</h2>
+    <ul>
+      <li><a href="dashboard.php">Dashboard</a></li>
+      <li><a href="manage_users.php">Manage Users</a></li>
+      <li><a href="manage_listings.php">Manage Listings</a></li>
+      <li><a href="manage_messages.php">View Messages</a></li>
+      <li><a href="logout.php">Logout</a></li>
+    </ul>
 </div>
 <div class="main">
   <h2>Contact Messages</h2>

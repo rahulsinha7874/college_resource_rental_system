@@ -590,40 +590,36 @@ require_once 'header.php';
 
     <div class="listing-grid" id="listing-grid">
       <?php if (count($listings) > 0): ?>
-        <?php foreach ($listings as $index => $listing): ?>
-          <?php
-          $priceValue = floatval($listing['price']);
-          $priceDisplay = ($priceValue > 500) ? '₹' . $priceValue . '/month' : (($priceValue > 0) ? '₹' . $priceValue : 'Free');
-          $buttonText = ($priceValue > 500) ? 'Rent Now' : (($priceValue > 0) ? 'Buy Now' : 'Get Now');
-          $category = !empty($listing['category']) ? $listing['category'] : 'other';
-          
-          // Check if image exists in database
-          $hasImage = !empty($listing['image']);
-          $imageContent = '';
-          
-          if ($hasImage) {
-            // Use get_image.php to retrieve image from database
-            $imageContent = 'get_image.php?id=' . $listing['id'];
-          }
-          
-          // Format date
-          $date = !empty($listing['created_at']) ? date('M j, Y', strtotime($listing['created_at'])) : 'Recent';
-          ?>
-          <div class="listing" data-category="<?php echo htmlspecialchars($category); ?>" style="animation-delay: <?php echo $index * 0.05; ?>s">
+        <?php foreach ($listings as $index => $listing):
+         $priceValue = floatval($listing['price']);
+         $priceDisplay = ($priceValue > 500) ? '₹' . $priceValue . '/month' : (($priceValue > 0) ? '₹' . $priceValue : 'Free');
+         $buttonText = ($priceValue > 500) ? 'Rent Now' : (($priceValue > 0) ? 'Buy Now' : 'Get Now');
+         $category = !empty($listing['category']) ? $listing['category'] : 'other';
+  
+          // ✅ Fetch image from uploads folder
+            $hasImage = !empty($listing['image']);
+            $imageContent = 'images/no-image.png'; // default fallback
+
+            if ($hasImage) {
+            $images = explode(',', $listing['image']);
+            $firstImage = trim($images[0]);
+
+            if (file_exists(__DIR__ . '/uploads/' . $firstImage)) {
+             $imageContent = 'uploads/' . $firstImage;
+            }
+           }
+
+             $date = !empty($listing['created_at']) ? date('M j, Y', strtotime($listing['created_at'])) : 'Recent';
+             ?>
+             <div class="listing" data-category="<?php echo htmlspecialchars($category); ?>" style="animation-delay: <?php echo $index * 0.05; ?>s">
             <?php if ($priceValue == 0): ?>
-              <div class="listing-badge">FREE</div>
-            <?php endif; ?>
-            <div class="listing-image">
-              <?php if ($hasImage): ?>
-                <img src="<?php echo $imageContent; ?>" alt="<?php echo htmlspecialchars($listing['title']); ?>">
-              <?php else: ?>
-                <div class="no-image">
-                  <i class="fas fa-image"></i>
-                </div>
-              <?php endif; ?>
-            </div>
-            <div class="listing-content">
-              <h3><?php echo htmlspecialchars($listing['title']); ?></h3>
+             <div class="listing-badge">FREE</div>
+             <?php endif; ?>
+             <div class="listing-image">
+             <img src="<?php echo $imageContent; ?>" alt="<?php echo htmlspecialchars($listing['title']); ?>">
+             </div>
+             <div class="listing-content">
+             <h3><?php echo htmlspecialchars($listing['title']); ?></h3>
               <div class="listing-meta">
                 <span class="listing-category"><?php echo htmlspecialchars(ucfirst($category)); ?></span>
               </div>

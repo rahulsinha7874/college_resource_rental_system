@@ -692,82 +692,79 @@ if (!$result) {
         <?php endif; ?>
 
         <?php if ($result->num_rows > 0): ?>
-            <div class="listings-grid">
-                <?php while ($listing = $result->fetch_assoc()): 
-                    // Determine status (you can add this field to your database)
-                    $status = 'active';
-                    $statusClass = 'status-active';
-                    $statusText = 'Active';
+    <div class="listings-grid">
+        <?php while ($listing = $result->fetch_assoc()): 
+            // Determine status
+            $status = 'active';
+            $statusClass = 'status-active';
+            $statusText = 'Active';
+
+            // Get image path from uploads folder
+            $hasImage = !empty($listing['image']);
+            $imagePath = 'uploads/' . basename($listing['image']);
+            $imageSrc = ($hasImage && file_exists($imagePath)) ? $imagePath : 'assets/no-image.png';
+
+            // Format price
+            $price = '₹' . $listing['price'];
+            if ($listing['price'] == 0) {
+                $price = 'Free';
+            }
+        ?>
+            <div class="listing-card" data-id="<?php echo $listing['id']; ?>">
+                <div class="listing-status <?php echo $statusClass; ?>">
+                    <?php echo $statusText; ?>
+                </div>
+                
+                <div class="listing-image">
+                    <img src="<?php echo htmlspecialchars($imageSrc); ?>" 
+                         alt="<?php echo htmlspecialchars($listing['title']); ?>" 
+                         onerror="this.src='assets/no-image.png'">
+                </div>
+                
+                <div class="listing-content">
+                    <h3><?php echo htmlspecialchars($listing['title']); ?></h3>
                     
-                    // Get image if available
-                    $hasImage = !empty($listing['image']);
-                    $imageContent = $hasImage ? 'get_image.php?id=' . $listing['id'] : '';
+                    <div class="listing-meta">
+                        <span class="listing-category"><?php echo ucfirst(str_replace('_', ' ', $listing['category'])); ?></span>
+                        <span class="listing-date"><?php echo date('M j, Y', strtotime($listing['created_at'])); ?></span>
+                    </div>
                     
-                    // Format price
-                    $price = '₹' . $listing['price'];
-                    if ($listing['price'] == 0) {
-                        $price = 'Free';
-                    }
-                ?>
-                    <div class="listing-card" data-id="<?php echo $listing['id']; ?>">
-                        <div class="listing-status <?php echo $statusClass; ?>">
-                            <?php echo $statusText; ?>
-                        </div>
-                        
-                        <div class="listing-image">
-                            <?php if ($hasImage): ?>
-                                <img src="<?php echo $imageContent; ?>" alt="<?php echo htmlspecialchars($listing['title']); ?>">
-                            <?php else: ?>
-                                <div class="no-image">
-                                    <i class="fas fa-image"></i>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                        
-                        <div class="listing-content">
-                            <h3><?php echo htmlspecialchars($listing['title']); ?></h3>
-                            
-                            <div class="listing-meta">
-                                <span class="listing-category"><?php echo ucfirst(str_replace('_', ' ', $listing['category'])); ?></span>
-                                <span class="listing-date"><?php echo date('M j, Y', strtotime($listing['created_at'])); ?></span>
-                            </div>
-                            
-                            <div class="listing-price"><?php echo $price; ?></div>
-                            
-                            <div class="listing-desc">
-                                <?php 
-                                $description = !empty($listing['description']) ? $listing['description'] : 'No description available.';
-                                echo htmlspecialchars($description);
-                                ?>
-                            </div>
-                            
-                            <div class="listing-footer">
-                                <div class="listing-actions">
-                                    <a href="edit_listing.php?id=<?php echo $listing['id']; ?>" class="btn btn-edit btn-sm">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </a>
-                                    <form action="delete_listing.php" method="POST" class="delete-form">
-                                        <input type="hidden" name="id" value="<?php echo $listing['id']; ?>">
-                                        <button type="button" class="btn btn-delete btn-sm delete-btn">
-                                            <i class="fas fa-trash"></i> Delete
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
+                    <div class="listing-price"><?php echo $price; ?></div>
+                    
+                    <div class="listing-desc">
+                        <?php 
+                        $description = !empty($listing['description']) ? $listing['description'] : 'No description available.';
+                        echo htmlspecialchars($description);
+                        ?>
+                    </div>
+                    
+                    <div class="listing-footer">
+                        <div class="listing-actions">
+                            <a href="edit_listing.php?id=<?php echo $listing['id']; ?>" class="btn btn-edit btn-sm">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <form action="delete_listing.php" method="POST" class="delete-form">
+                                <input type="hidden" name="id" value="<?php echo $listing['id']; ?>">
+                                <button type="button" class="btn btn-delete btn-sm delete-btn">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </form>
                         </div>
                     </div>
-                <?php endwhile; ?>
+                </div>
             </div>
-        <?php else: ?>
-            <div class="empty-state">
-                <i class="fas fa-box-open"></i>
-                <h3>No Listings Yet</h3>
-                <p>You haven't created any listings yet. Start sharing your resources with the campus community!</p>
-                <a href="upload.php" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Create Your First Listing
-                </a>
-            </div>
-        <?php endif; ?>
+        <?php endwhile; ?>
+    </div>
+<?php else: ?>
+    <div class="empty-state">
+        <i class="fas fa-box-open"></i>
+        <h3>No Listings Yet</h3>
+        <p>You haven't created any listings yet. Start sharing your resources with the campus community!</p>
+        <a href="upload.php" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Create Your First Listing
+        </a>
+    </div>
+<?php endif; ?>
     </div>
 
     <!-- Delete Confirmation Modal -->
