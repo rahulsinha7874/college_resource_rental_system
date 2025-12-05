@@ -489,10 +489,12 @@ if (isset($_SESSION['user_id'])) {
         <div class="form-group">
           <label for="first-name">First Name</label>
           <input type="text" id="first-name" name="first_name" placeholder="First name" required>
+          <span class="error" id="first-name-error"></span>
         </div>
         <div class="form-group">
           <label for="last-name">Last Name</label>
           <input type="text" id="last-name" name="last_name" placeholder="Last name" required>
+          <span class="error" id="last-name-error"></span>  
         </div>
       </div>
 
@@ -500,6 +502,7 @@ if (isset($_SESSION['user_id'])) {
         <label for="email">College Email</label>
         <div class="input-with-icon">
           <input type="email" id="email" name="email" placeholder="your.name@college.edu" required>
+          <span class="error" id="email-error"></span>
           <i class="fas fa-envelope"></i>
         </div>
       </div>
@@ -508,6 +511,7 @@ if (isset($_SESSION['user_id'])) {
         <label for="password">Create Password</label>
         <div class="input-with-icon">
           <input type="password" id="password" name="password" placeholder="At least 8 characters" required minlength="8">
+          <span class="error" id="password-error"></span>
           <i class="fas fa-lock"></i>
         </div>
       </div>
@@ -516,6 +520,7 @@ if (isset($_SESSION['user_id'])) {
         <label for="confirm-password">Confirm Password</label>
         <div class="input-with-icon">
           <input type="password" id="confirm-password" name="confirm_password" placeholder="Confirm your password" required>
+          <span class="error" id="confirm-password-error"></span>
           <i class="fas fa-lock"></i>
         </div>
       </div>
@@ -530,6 +535,7 @@ if (isset($_SESSION['user_id'])) {
           <option value="Mumbai University">Mumbai University</option>
           <option value="Other Institution">Other Institution</option>
         </select>
+          <span class="error" id="college-error"></span>
       </div>
 
       <div class="form-group">
@@ -545,10 +551,12 @@ if (isset($_SESSION['user_id'])) {
           <option value="Science">Science</option>
           <option value="Other">Other</option>
         </select>
+          <span class="error" id="department-error"></span>
       </div>
 
       <div class="terms">
         <input type="checkbox" id="terms" required>
+        <span class="error" id="terms-error"></span>
         <label for="terms">I agree to the <a href="terms.php">Terms of Service</a> and <a href="privacy.php">Privacy Policy</a></label>
       </div>
 

@@ -831,6 +831,19 @@ if (isset($_GET['status']) && $_GET['status'] === 'success') {
   font-weight: bold;
 }
 
+/* input error styles */
+.error-message {
+  color: #e63946;
+  font-size: 14px;
+  margin-top: 5px;
+  display: none;
+}
+
+.error-field {
+  border: 2px solid #e63946 !important;
+}
+
+
   </style>
 </head>
 <body>
@@ -1364,6 +1377,131 @@ if (isset($_GET['status']) && $_GET['status'] === 'success') {
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
       });
     });
+
+
+// FORM VALIDATION SCRIPT
+document.getElementById("resourceForm").addEventListener("submit", validateForm);
+
+// SHOW ERROR
+function showError(inputId, errorId, message) {
+  const input = document.getElementById(inputId);
+  const error = document.getElementById(errorId);
+
+  input.classList.add("error-field");
+  error.textContent = message;
+  error.style.display = "block";
+}
+
+// CLEAR ERROR
+function clearError(inputId, errorId) {
+  const input = document.getElementById(inputId);
+  const error = document.getElementById(errorId);
+
+  input.classList.remove("error-field");
+  error.style.display = "none";
+}
+
+function validateForm(e) {
+  let valid = true;
+
+  // Reset all errors
+  document.querySelectorAll(".error-message").forEach(el => el.style.display = "none");
+  document.querySelectorAll(".error-field").forEach(el => el.classList.remove("error-field"));
+
+  // INPUT VALUES
+  let title = document.getElementById("title").value.trim();
+  let category = document.getElementById("category").value;
+  let description = document.getElementById("description").value.trim();
+  let price = document.getElementById("price").value;
+  let rentalPeriod = document.getElementById("min_rental_period").value;
+  let contact = document.getElementById("contact").value.trim();
+  let files = document.getElementById("image").files;
+  let listingType = document.getElementById("listing_type").value; // rent or sale
+
+  // ----------------------------
+  // 1) TITLE VALIDATION
+  // ----------------------------
+  if (title.length < 5 || title.length > 100) {
+    showError("title", "title-error", "Title must be 5–100 characters");
+    valid = false;
+  }
+
+  // ----------------------------
+  // 2) CATEGORY
+  // ----------------------------
+  if (category === "") {
+    showError("category", "category-error", "Please select a category");
+    valid = false;
+  }
+
+  // ----------------------------
+  // 3) DESCRIPTION
+  // ----------------------------
+  if (description.length < 20 || description.length > 500) {
+    showError("description", "desc-error", "Description must be 20–500 characters");
+    valid = false;
+  }
+
+  // ----------------------------
+  // 4) PRICE
+  // ----------------------------
+  if (price === "" || price <= 0) {
+    showError("price", "price-error", "Enter a valid price");
+    valid = false;
+  }
+
+  // ----------------------------
+  // 5) RENTAL PERIOD (only if rent type)
+  // ----------------------------
+  if (listingType === "rent") {
+    if (rentalPeriod === "" || rentalPeriod <= 0) {
+      showError("min_rental_period", "rental-period-error", "Enter valid rental period");
+      valid = false;
+    }
+  }
+
+  // ----------------------------
+  // 6) IMAGES (max 5, max 5MB each)
+  // ----------------------------
+  if (files.length === 0) {
+    showError("image", "image-error", "Upload at least one image");
+    valid = false;
+  } else if (files.length > 5) {
+    showError("image", "image-error", "You can upload max 5 images");
+    valid = false;
+  } else {
+    for (let i = 0; i < files.length; i++) {
+      if (files[i].size > 5 * 1024 * 1024) {
+        showError("image", "image-error", "Each image must be less than 5MB");
+        valid = false;
+        break;
+      }
+    }
+  }
+
+  // ----------------------------
+  // 7) CONTACT (email or phone)
+  // ----------------------------
+  let phoneRegex = /^[0-9]{10}$/;
+  let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!phoneRegex.test(contact) && !emailRegex.test(contact)) {
+    showError("contact", "contact-error", "Enter valid phone (10 digits) or email");
+    valid = false;
+  }
+
+  if (!valid) e.preventDefault();
+}
+
+
+/* CHARACTER COUNTERS */
+  document.getElementById("title").addEventListener("input", function () {
+  document.getElementById("title-char-count").textContent = this.value.length + "/100";
+});
+
+document.getElementById("description").addEventListener("input", function () {
+  document.getElementById("desc-char-count").textContent = this.value.length + "/500";
+});
   </script>
 </body>
 </html>

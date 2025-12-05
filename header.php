@@ -167,6 +167,23 @@ if (session_status() == PHP_SESSION_NONE) {
   </style>
 </head>
 <body>
+  <?php
+$cartCount = 0;
+
+if (isset($_SESSION['user_id'])) {
+    require_once 'connection.php';
+    $conn = Connect();
+
+    $user_id = $_SESSION['user_id'];
+    $stmt = $conn->prepare("SELECT COUNT(*) AS total FROM cartt WHERE user_id=?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_assoc();
+
+    $cartCount = $result['total'] ?? 0;
+}
+?>
+
 <header>
     <div class="logo">
         <i class="fas fa-book-open"></i>
@@ -188,7 +205,7 @@ if (session_status() == PHP_SESSION_NONE) {
                 <span style="color: white; margin-right: 1rem;">
                     Welcome, <?php echo htmlspecialchars($_SESSION['user_name']); ?>
                 </span>
-                <a href="cart.php">Cart (<span id="cart-count">0</span>)</a>
+                <a href="cart.php" id="cart-link">Cart</a>
                 <a href="profile.php" class="btn btn-outline">Profile</a>
                 <a href="logout.php" class="btn btn-primary">Logout</a>
             <?php else: ?>

@@ -603,185 +603,140 @@ require_once 'header.php';
 
 
   <script>
-    // Check if user is logged in (simulated with sessionStorage)
-    function isLoggedIn() {
-      // In a real application, this would check with your backend
-      // For demo purposes, we'll check sessionStorage
-      return sessionStorage.getItem('isLoggedIn') === 'true';
-    }
 
-    // Initialize login status if not set
-    if (sessionStorage.getItem('isLoggedIn') === null) {
-      // Since the user is shown as logged in the header, set to true
-      sessionStorage.setItem('isLoggedIn', 'true');
-    }
+// Load cart from backend when page loads
+document.addEventListener("DOMContentLoaded", function() {
+    loadCartFromBackend();
+});
 
-    // Notification system
-    function showNotification(message, type = 'success') {
-      const notification = document.getElementById('notification');
-      const messageEl = document.getElementById('notification-message');
-      
-      notification.className = `notification ${type} show`;
-      messageEl.textContent = message;
-      
-      setTimeout(() => {
-        notification.classList.remove('show');
-      }, 3000);
-    }
+// ===============================================
+// 1️⃣ FETCH CART DATA FROM BACKEND
+// ===============================================
+function loadCartFromBackend() {
+    fetch("fetch_cart.php")
+    .then(res => res.json())
+    .then(data => {
+        console.log(data);
 
-    // Show login modal
-    function showLoginModal() {
-      document.getElementById('loginModal').style.display = 'flex';
-    }
-
-    // Close modal when clicking X
-    document.getElementById('closeModal').addEventListener('click', function() {
-      document.getElementById('loginModal').style.display = 'none';
-    });
-
-    // Close modal when clicking outside
-    window.addEventListener('click', function(e) {
-      if (e.target === document.getElementById('loginModal')) {
-        document.getElementById('loginModal').style.display = 'none';
-      }
-    });
-
-    // Load cart items from localStorage
-    document.addEventListener('DOMContentLoaded', function() {
-      const cart = JSON.parse(localStorage.getItem('cart')) || [];
-      const cartItemsContainer = document.getElementById('cart-items');
-      const cartTotal = document.getElementById('cart-total');
-      const cartCount = document.getElementById('cart-count');
-      const checkoutBtn = document.getElementById('checkout-btn');
-      
-      // Update cart count in header
-      updateCartCount();
-      
-      if (cart.length === 0) {
-        cartItemsContainer.innerHTML = `
-          <p class="empty-cart-message">
-            Your cart is currently empty. <a href="listing.php" style="color: var(--accent-color);">Browse items</a> to add to your cart.
-          </p>
-        `;
-        cartTotal.textContent = '₹0';
-        checkoutBtn.disabled = true;
-        checkoutBtn.style.opacity = '0.7';
-        checkoutBtn.style.cursor = 'not-allowed';
-      } else {
-        renderCartItems();
-      }
-      
-      // Checkout button functionality
-      checkoutBtn.addEventListener('click', function() {
-        if (!isLoggedIn()) {
-          showLoginModal();
-          showNotification('Please login to proceed to checkout', 'warning');
-          return;
-        }
-        
-        if (cart.length > 0) {
-          window.location.href = 'checkout.php';
-        }
-      });
-
-      // Update checkout button state based on login status
-      function updateCheckoutButton() {
-        if (!isLoggedIn()) {
-          checkoutBtn.disabled = true;
-          checkoutBtn.style.opacity = '0.7';
-          checkoutBtn.style.cursor = 'not-allowed';
-          checkoutBtn.title = 'Please login to proceed to checkout';
+        if (data.status === "success") {
+            renderCartItems(data.items);
+            updateCartTotal(data.total);
+            updateNavbarCartCount(data.count);
         } else {
-          checkoutBtn.disabled = false;
-          checkoutBtn.style.opacity = '1';
-          checkoutBtn.style.cursor = 'pointer';
-          checkoutBtn.title = '';
-          checkoutBtn.innerHTML = '<i class="fas fa-check"></i> Proceed to Checkout';
+            renderEmptyCart();
         }
-      }
+    })
+    .catch(err => console.error("Cart Load Error:", err));
+}
 
-      // Initial button state update
-      updateCheckoutButton();
-      
-      // Function to update cart count
-      function updateCartCount() {
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
-        cartCount.textContent = cart.length;
-      }
-      
-      // Function to render cart items
-      function renderCartItems() {
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
-        let total = 0;
-        cartItemsContainer.innerHTML = '';
-        
-        if (cart.length === 0) {
-          cartItemsContainer.innerHTML = `
-            <p class="empty-cart-message">
-              Your cart is currently empty. <a href="listing.php" style="color: var(--accent-color);">Browse items</a> to add to your cart.
-            </p>
-          `;
-          cartTotal.textContent = '₹0';
-          checkoutBtn.disabled = true;
-          checkoutBtn.style.opacity = '0.7';
-          checkoutBtn.style.cursor = 'not-allowed';
-          return;
-        }
-        
-        cart.forEach(item => {
-          total += item.price;
-          const itemElement = document.createElement('div');
-          itemElement.className = 'cart-item';
-          itemElement.innerHTML = `
-            <div class="cart-item-info">
-              <h4>${item.name}</h4>
-              <p>${item.description || ''}</p>
-            </div>
-            <div class="cart-item-price">₹${item.price}</div>
-            <button class="remove-item" data-id="${item.id}">
-              <i class="fas fa-trash-alt"></i> Remove
-            </button>
-          `;
-          cartItemsContainer.appendChild(itemElement);
-        });
-        
-        cartTotal.textContent = `₹${total}`;
-        
-        // Add event listeners for remove buttons
-        document.querySelectorAll('.remove-item').forEach(button => {
-          button.addEventListener('click', function() {
-            const itemId = this.getAttribute('data-id');
-            removeFromCart(itemId);
-          });
-        });
-      }
-      
-      // Function to remove item from cart
-      function removeFromCart(itemId) {
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        cart = cart.filter(item => item.id !== itemId);
-        localStorage.setItem('cart', JSON.stringify(cart));
-        
-        showNotification('Item removed from cart', 'success');
-        updateCartCount();
-        renderCartItems();
-      }
-    });
+// ===============================================
+// 2️⃣ RENDER CART ITEMS ON PAGE
+// ===============================================
+function renderCartItems(items) {
+    const container = document.getElementById("cart-items");
+    container.innerHTML = "";
 
-    // Initialize cart with sample data if empty
-    if (!localStorage.getItem('cart')) {
-      const sampleCart = [
-        {
-          id: '1',
-          name: 'Casio Calculator FX-991EX',
-          description: 'Scientific calculator with 552 functions, suitable for engineering students',
-          price: 300,
-          image: 'https://images.unsplash.com/photo-1587145820266-a5951ee6f620?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80'
-        }
-      ];
-      localStorage.setItem('cart', JSON.stringify(sampleCart));
+    if (items.length === 0) {
+        renderEmptyCart();
+        return;
     }
-  </script>
+
+    items.forEach(item => {
+        container.innerHTML += `
+        <div class="cart-item">
+            <div class="cart-item-info">
+                <h4>${item.name}</h4>
+                <p>${item.description || ""}</p>
+            </div>
+
+            <div class="cart-item-price">₹${item.price}</div>
+
+            <button class="remove-item" onclick="removeCartItem(${item.item_id})">
+                <i class="fas fa-trash-alt"></i> Remove
+            </button>
+        </div>
+        `;
+    });
+}
+
+// ===============================================
+// 3️⃣ SHOW EMPTY CART MESSAGE
+// ===============================================
+function renderEmptyCart() {
+    document.getElementById("cart-items").innerHTML = `
+        <p class="empty-cart-message">
+            Your cart is empty. <a href="listing.php" style="color: var(--accent-color);">Browse items</a>
+        </p>
+    `;
+    updateCartTotal(0);
+    disableCheckoutBtn();
+}
+
+// ===============================================
+// 4️⃣ UPDATE CART TOTAL
+// ===============================================
+function updateCartTotal(total) {
+    document.getElementById("cart-total").textContent = "₹" + total;
+}
+
+// ===============================================
+// 5️⃣ UPDATE NAVBAR CART COUNT
+// ===============================================
+function updateNavbarCartCount(count) {
+    const navCount = document.getElementById("cart-count");
+    if (navCount) {
+        navCount.textContent = count;
+    }
+}
+
+// ===============================================
+// 6️⃣ DISABLE CHECKOUT IF CART EMPTY
+// ===============================================
+function disableCheckoutBtn() {
+    const btn = document.getElementById("checkout-btn");
+    if (btn) {
+        btn.disabled = true;
+        btn.style.opacity = "0.6";
+        btn.style.cursor = "not-allowed";
+    }
+}
+
+// ===============================================
+// 7️⃣ REMOVE ITEM FROM CART (BACKEND)
+// ===============================================
+function removeCartItem(itemId) {
+    fetch("remove_cart_item.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ item_id: itemId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            showNotification("Item removed", "success");
+            loadCartFromBackend(); // refresh cart after delete
+        }
+    })
+    .catch(err => console.error("Remove Item Error:", err));
+}
+
+// ===============================================
+// 8️⃣ NOTIFICATION POPUP
+// ===============================================
+function showNotification(message, type = "success") {
+    const notification = document.getElementById("notification");
+    const messageEl = document.getElementById("notification-message");
+
+    notification.className = `notification ${type} show`;
+    messageEl.textContent = message;
+
+    setTimeout(() => {
+        notification.classList.remove("show");
+    }, 3000);
+}
+
+</script>
+
 </body>
 </html>
 <?php require_once 'footer.php'; ?>

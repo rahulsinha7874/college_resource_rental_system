@@ -483,6 +483,39 @@ require_once 'header.php';
         grid-template-columns: 1fr;
       }
     }
+
+    /* Error message styles for form validation */
+    .error-message {
+  color: #e63946;
+  font-size: 13px;
+  margin-top: 4px;
+  display: none;
+}
+
+.error-field {
+  border: 2px solid #e63946 !important;
+}
+
+/* Success and error box styles */
+.success-box {
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+}
+
+.error-box {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+}
+
+
   </style>
 </head>
 <body>
@@ -520,8 +553,8 @@ require_once 'header.php';
           </div>
           <div class="contact-details">
             <h3>Call Us</h3>
-            <a href="tel:+18005551234">+1 (800) 555-1234</a>
-            <p>Mon-Fri: 9am-5pm EST</p>
+            <a href="tel:+91 9876987654">+91 98769 87654</a>
+            <p>Mon-Fri: 9am-5pm IST</p>
           </div>
         </div>
         
@@ -531,7 +564,7 @@ require_once 'header.php';
           </div>
           <div class="contact-details">
             <h3>Visit Us</h3>
-            <p>123 University Avenue<br>Campus Town, CT 06510</p>
+            <p>Shrinathji College of Computer Applications<br>Daman</p>
           </div>
         </div>
         
@@ -548,6 +581,18 @@ require_once 'header.php';
       </div>
       
       <div class="contact-form">
+        <?php if (isset($_GET['success'])): ?>
+    <div class="success-box">
+        <i class="fas fa-check-circle"></i> Your message has been sent successfully!
+    </div>
+<?php endif; ?>
+
+<?php if (isset($_GET['error'])): ?>
+    <div class="error-box">
+        <i class="fas fa-times-circle"></i> Something went wrong. Please try again.
+    </div>
+<?php endif; ?>
+
         <div class="section-title">
           <h2>Send Us a Message</h2>
         </div>
@@ -555,11 +600,13 @@ require_once 'header.php';
           <div class="form-group">
             <label for="name">Your Name*</label>
             <input type="text" id="name" name="name" class="form-control" placeholder="Enter your full name" required>
+            <div class="error-message" id="name-error"></div>
           </div>
           
           <div class="form-group">
             <label for="email">Email Address*</label>
             <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required>
+            <div class="error-message" id="email-error"></div>  
           </div>
           
           <div class="form-group">
@@ -572,11 +619,13 @@ require_once 'header.php';
               <option value="partnership">Partnership Opportunities</option>
               <option value="other">Other</option>
             </select>
+            <div class="error-message" id="subject-error"></div>
           </div>
           
           <div class="form-group">
             <label for="message">Your Message*</label>
             <textarea id="message" name="message" class="form-control" placeholder="How can we help you?" required></textarea>
+            <div class="error-message" id="message-error"></div>    
           </div>
           
           <button type="submit" class="submit-btn">
@@ -586,7 +635,14 @@ require_once 'header.php';
       </div>
       
       <div class="map-container">
-        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.215662132365!2d-73.98784468459382!3d40.748440179327925!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c259a9b3117469%3A0xd134e199a405a163!2sEmpire%20State%20Building!5e0!3m2!1sen!2sus!4v1629999999999!5m2!1sen!2sus" allowfullscreen="" loading="lazy"></iframe>
+        <iframe 
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3728.684291829942!2d72.83121057473547!3d20.397373986353893!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be0f783c90dca3d%3A0x6ad59a3b6b9e4e4d!2sDaman%2C%20Dadra%20and%20Nagar%20Haveli%20and%20Daman%20and%20Diu!5e0!3m2!1sen!2sin!4v1700999999999!5m2!1sen!2sin" 
+          width="100%" 
+          height="350" 
+          style="border:0;" 
+          allowfullscreen="" 
+          loading="lazy">
+        </iframe>
       </div>
       
       <div class="faq-section">
@@ -656,8 +712,69 @@ require_once 'header.php';
         e.preventDefault();
         alert('Please enter a valid email address');
       }
-      // Add more validation as needed
     });
+
+document.querySelector("form").addEventListener("submit", validateContactForm);
+
+function showError(inputId, errorId, message) {
+  const field = document.getElementById(inputId);
+  const error = document.getElementById(errorId);
+
+  field.classList.add("error-field");
+  error.textContent = message;
+  error.style.display = "block";
+}
+
+function clearError(inputId, errorId) {
+  const field = document.getElementById(inputId);
+  const error = document.getElementById(errorId);
+
+  field.classList.remove("error-field");
+  error.style.display = "none";
+}
+
+function validateContactForm(e) {
+  let valid = true;
+
+  // Reset errors
+  document.querySelectorAll(".error-message").forEach(el => el.style.display = "none");
+  document.querySelectorAll(".error-field").forEach(el => el.classList.remove("error-field"));
+
+  let name = document.getElementById("name").value.trim();
+  let email = document.getElementById("email").value.trim();
+  let subject = document.getElementById("subject").value;
+  let message = document.getElementById("message").value.trim();
+
+  // 1) Name
+  if (name.length < 3) {
+    showError("name", "name-error", "Name must be at least 3 characters.");
+    valid = false;
+  }
+
+  // 2) Email
+  let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    showError("email", "email-error", "Enter a valid email address.");
+    valid = false;
+  }
+
+  // 3) Subject
+  if (subject === "") {
+    showError("subject", "subject-error", "Please select a subject.");
+    valid = false;
+  }
+
+  // 4) Message
+  if (message.length < 10) {
+    showError("message", "message-error", "Message must be at least 10 characters.");
+    valid = false;
+  }
+
+  if (!valid) e.preventDefault();
+}
+
+
+
   </script>
   
 </body>

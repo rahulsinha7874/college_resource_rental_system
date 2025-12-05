@@ -53,13 +53,13 @@ if (!empty($_FILES['image']['name'][0])) {
 $imageList = implode(',', $imageNames);
 
 // ✅ Insert into DB
-$sql = "INSERT INTO upload (user_id, title, category, description, price, image, contact)
-        VALUES (?, ?, ?, ?, ?, ?, ?)";
+$sql = "INSERT INTO upload (user_id, title, category, description, price, image, contact, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("isssdss", $user_id, $title, $category, $description, $price, $imageList, $contact);
 
 if ($stmt->execute()) {
-    echo "<script>alert('✅ Listing uploaded successfully!'); window.location.href='upload.php';</script>";
+    echo "<script>alert('Your resource is posted successfully! It will go live on the website when approved by the admin.'); window.location.href='upload.php';</script>";
 } else {
     echo "❌ Database Error: " . $conn->error;
 }

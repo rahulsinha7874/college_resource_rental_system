@@ -1,9 +1,8 @@
 <?php
 $pageTitle = "My Listings | CampusShare";
 $pageDescription = "Manage your academic resource listings on CampusShare";
-require_once 'header.php';
 
-require 'connection.php';
+require_once 'connection.php';
 $conn = Connect();
 
 // Check if user is logged in

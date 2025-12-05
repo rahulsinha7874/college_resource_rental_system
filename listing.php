@@ -7,11 +7,11 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-require 'connection.php';
+require_once 'connection.php';
 $conn = Connect();
 
 // Fetch all resources
-$result = $conn->query("SELECT * FROM upload ORDER BY created_at DESC");
+$result = $conn->query("SELECT * FROM upload where status='approved' ORDER BY created_at DESC");
 
 $listings = [];
 while ($row = $result->fetch_assoc()) {
@@ -22,6 +22,7 @@ $pageTitle = "Available Listings | CampusShare";
 $pageDescription = "Browse available academic resources including books, electronics, and study materials shared by students in your college community.";
 require_once 'header.php';
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -738,46 +739,70 @@ require_once 'header.php';
     }
 
     // Add to cart handler
-    function addToCartHandler(event) {
-      const button = event.currentTarget;
-      const itemId = button.dataset.id;
-      const itemName = button.dataset.name;
-      const itemPrice = parseFloat(button.dataset.price);
-      
-      addToCart(itemId, itemName, itemPrice);
-      
-      // Visual feedback
-      const originalText = button.innerHTML;
-      button.innerHTML = '<i class="fas fa-check"></i> Added';
-      button.style.background = '#4CAF50';
-      setTimeout(() => {
-        button.innerHTML = originalText;
-        button.style.background = '';
-      }, 2000);
-      
-      // Show notification
-      showNotification(`"${itemName}" added to cart!`);
-    }
+            function addToCartHandler(event) {
+          const button = event.currentTarget;
+          const itemId = button.dataset.id;
+          const itemName = button.dataset.name;
+          const itemPrice = parseFloat(button.dataset.price);
+
+          addToCart(itemId, itemName, itemPrice);
+
+          const originalText = button.innerHTML;
+          button.innerHTML = '<i class="fas fa-check"></i> Added';
+          button.style.background = '#4CAF50';
+
+          setTimeout(() => {
+            button.innerHTML = originalText;
+            button.style.background = '';
+          }, 1500);
+
+          showNotification(`"${itemName}" added to cart!`);
+        }
+
 
     // Add item to cart
     function addToCart(itemId, itemName, itemPrice) {
-      let cart = JSON.parse(localStorage.getItem('cart')) || [];
-      
-      // Check if item already exists in cart
-      const existingItem = cart.find(item => item.id == itemId);
-      
-      if (!existingItem) {
-        cart.push({ 
-          id: itemId, 
-          name: itemName, 
-          price: itemPrice,
-          quantity: 1
-        });
-        
-        localStorage.setItem('cart', JSON.stringify(cart));
-        updateCartCount();
-      }
-    }
+  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+            // Check if already in local storage
+            const existingItem = cart.find(item => item.id == itemId);
+
+            if (!existingItem) {
+              cart.push({
+                id: itemId,
+                name: itemName,
+                price: itemPrice,
+                quantity: 1
+              });
+
+              localStorage.setItem('cart', JSON.stringify(cart));
+              updateCartCount();
+            }
+
+            // Save into database also
+            fetch("add_to_cart.php", {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({
+                id: itemId,
+                name: itemName,
+                description: "",
+                price: itemPrice,
+                quantity: 1
+              })
+            })
+            .then(res => res.json())
+            .then(data => {
+              if (data.status === "success") {
+                // You do NOT show count in navbar, so nothing needed here
+                console.log("Saved to DB:", data);
+              } else {
+                console.warn("DB save error:", data.message);
+              }
+            })
+            .catch(err => console.error("ERROR saving to DB:", err));
+          }
+
 
     // Add all visible items to cart
     function addAllToCart() {
@@ -819,17 +844,16 @@ require_once 'header.php';
       }
     }
 
-    // Update cart count display
-    function updateCartCount() {
-      const cart = JSON.parse(localStorage.getItem('cart')) || [];
-      if (cartCount) {
-        cartCount.textContent = cart.length;
-        cartCount.classList.add('pulse');
-        setTimeout(() => {
-          cartCount.classList.remove('pulse');
-        }, 500);
+        // Update cart count display
+          function updateCartCount() {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        if (cartCount) {
+          cartCount.textContent = cart.length;
+          cartCount.style.display = "none"; // hide number in navbar
+        }
       }
-    }
+
 
     // Show notification
     function showNotification(message, type = 'success') {
@@ -845,7 +869,7 @@ require_once 'header.php';
       
       setTimeout(() => {
         cartNotification.classList.remove('show');
-      }, 3000);
+      }, 2000);
     }
 
     // Initialize filter on page load

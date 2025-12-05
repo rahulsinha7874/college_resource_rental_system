@@ -9,7 +9,8 @@ require_once 'connection.php';
 $conn = Connect();
 
 // Fetch latest 4 featured items from DB
-$sql = "SELECT * FROM upload ORDER BY created_at DESC LIMIT 4";
+$sql = "SELECT * FROM upload WHERE status='approved' 
+        ORDER BY created_at DESC LIMIT 4";
 $result = $conn->query($sql);
 $listings = [];
 
@@ -1055,6 +1056,30 @@ $conn->close();
       font-size: 0.9rem;
       opacity: 0.8;
     }
+
+
+
+
+    .cart-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #4CAF50;
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      z-index: 1000;
+      transform: translateX(150%);
+      transition: transform 0.5s ease;
+    }
+
+    .cart-notification.show {
+      transform: translateX(0);
+    }
   </style>
 </head>
 <body>
@@ -1151,12 +1176,20 @@ $conn->close();
               <div class="item-price"><?php echo $priceDisplay; ?></div>
               <p class="item-desc"><?php echo substr(htmlspecialchars($listing['description']), 0, 120) . '...'; ?></p>
               <div class="item-actions">
-                <button class="btn btn-primary btn-sm add-to-cart"
+                <button class="btn btn-primary btn-sm"
                   data-id="<?php echo $listing['id']; ?>"
                   data-name="<?php echo htmlspecialchars($listing['title']); ?>"
-                  data-price="<?php echo $priceValue; ?>">
+                  data-price="<?php echo $priceValue; ?>"
+                  onclick="buyNow(
+                    '<?php echo $listing['id']; ?>',
+                    '<?php echo htmlspecialchars($listing['title']); ?>',
+                    '<?php echo $priceValue; ?>',
+                    '<?php echo htmlspecialchars($listing['description']); ?>',
+                    1
+                  )">
                   <i class="fas fa-shopping-cart"></i> <?php echo $buttonText; ?>
                 </button>
+
                 <a href="details.php?id=<?php echo $listing['id']; ?>" class="btn btn-outline btn-sm">
                   <i class="fas fa-eye"></i> Details
                 </a>
@@ -1549,7 +1582,8 @@ $conn->close();
       const itemName = button.dataset.name;
       const itemPrice = parseFloat(button.dataset.price);
 
-      addToCart(itemId, itemName, itemPrice);
+      addToCartUnified(itemId, itemName, itemPrice, listingDescription, 1);
+
 
       // Visual feedback
       button.innerHTML = '<i class="fas fa-check"></i> Added';
@@ -1656,6 +1690,121 @@ $conn->close();
         }
       }, 4000);
     }
+
+
+
+
+
+
+    /*  Buy Now Functionality */
+    function buyNow(itemId, itemName, itemPrice, itemDescription = "", quantity = 1) {
+
+  if (!isLoggedIn) {
+    showNotification('Please log in to buy this item', 'info');
+    setTimeout(() => window.location.href = "login.php", 1500);
+    return;
+  }
+
+  // 1️⃣ Save to LocalStorage (optional)
+  let cart = JSON.parse(localStorage.getItem("cartItems")) || [];
+
+  const item = {
+    id: itemId,
+    name: itemName,
+    description: itemDescription,
+    price: itemPrice,
+    quantity: quantity
+  };
+
+  cart.push(item);
+  localStorage.setItem("cartItems", JSON.stringify(cart));
+
+  // 2️⃣ Save to database (cartt table)
+  fetch("add_to_cart.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      id: itemId,
+      name: itemName,
+      description: itemDescription,
+      price: itemPrice,
+      quantity: quantity
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === "success") {
+      
+      // 3️⃣ Update navbar cart count
+      document.getElementById("cart-count").textContent = data.cart_count;
+
+      // 4️⃣ Show success message
+      showNotification("Item added to cart!", "success");
+
+      // ❌ NO REDIRECT
+    } 
+    else {
+      showNotification(data.message, "error");
+    }
+  })
+  .catch(err => console.error("Error:", err));
+}
+
+
+function addToCartUnified(itemId, itemName, itemPrice, itemDescription = "", quantity = 1) {
+    let cart = JSON.parse(localStorage.getItem("cartItems")) || [];
+
+    const existing = cart.find(item => item.id == itemId);
+
+    if (existing) {
+        existing.quantity += quantity;
+    } else {
+        cart.push({
+            id: itemId,
+            name: itemName,
+            description: itemDescription,
+            price: itemPrice,
+            quantity: quantity
+        });
+    }
+
+
+
+    function updateCartCountUnified() {
+    const cart = JSON.parse(localStorage.getItem("cartItems")) || [];
+    const total = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+    let cartCount = document.getElementById("cart-count");
+    if (cartCount) cartCount.textContent = total;
+}
+
+
+    localStorage.setItem("cartItems", JSON.stringify(cart));
+    updateCartCountUnified();
+}
+
+
+
+// Show notification
+    function showNotification(message, type = 'success') {
+      notificationText.textContent = message;
+      
+      if (type === 'success') {
+        cartNotification.style.backgroundColor = '#4CAF50';
+      } else {
+        cartNotification.style.backgroundColor = '#2196F3';
+      }
+      
+      cartNotification.classList.add('show');
+      
+      setTimeout(() => {
+        cartNotification.classList.remove('show');
+      }, 2000);
+    }
+
+
+
+
   </script>
 </body>
 </html>
